@@ -11,7 +11,7 @@ router.post("/shortUrl",
     (req, res, next) => {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
-            return res.status(400).json({ message: errors.array().length === 2 ? errors.array()[1].msg : errors.array()[0].msg, error: errors.array() })
+            return res.status(400).json({ message: errors.array().length === 2 ? errors.array()[1].msg : errors.array()[0].msg, error: errors.array(), success: false })
         }
         next()
     },

@@ -19,9 +19,10 @@ const shortUrlSchema = new Schema(
             lowercase: true
         }
     },
-    { timestamps: true }
+    { timestamps: true,
+     }
 )
 
-const ShortUrl = mongoose.model("shortUrl", shortUrlSchema)
+const ShortUrl = mongoose.model("shorturl", shortUrlSchema)
 
 export default ShortUrl

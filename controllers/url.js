@@ -1,17 +1,15 @@
-import ShortUrl from "../models/url"
+import ShortUrl from "../models/url.js"
 
 export const getShortURL = async (req, res, next) => {
   try {
     const { shortUrl } = req.params
-
-    const url = await ShortUrl.findOne({ shortUrl })
+    const url = await ShortUrl.findById(shortUrl).exec()
     if (!url) {
       return res.status(404).json({
         message: "URL not found!",
         success: false
       })
     }
-    
     return res.redirect(url.originalUrl)
   } catch (error) {
     return res.status(500).json({
@@ -27,25 +25,25 @@ export const addShortURL = async (req, res, next) => {
     const { originalUrl } = req.body
     const { DEPLOYED_DOMAIN_URL, PORT, NODE_ENV } = process.env
 
-    const checkExistingUrl = await ShortUrl.findOne({ originalUrl })
+    const checkExistingUrl = await ShortUrl.findOne({ originalUrl }).exec()
     if (checkExistingUrl) {
-      return res.status(401).json({
-        message: "originalUrl exists already!",
-        success: false
+      return res.status(200).json({
+        message: "Url exists already!",
+        result: checkExistingUrl?.shortUrl,
+        success: true
       })
     }
 
-    const isUrl = new URL(originalUrl)
-
-    if (isUrl?.origin !== null) {
-      return res.status(400).json({ error: "Invalid URL" })
+    try {
+      new URL(originalUrl)
+    } catch (error) {
+      return res.status(400).json({ message: "Invalid URL", error, success: false })
     }
 
     const hostUrl = NODE_ENV === "production" ? DEPLOYED_DOMAIN_URL : `http://localhost:${PORT}`
-    const uuid = uuidv4()
-    const shortUrl = `${hostUrl}/${uuid}`
-
-    const newUrl = new ShortUrl({ originalUrl, shortUrl })
+    const newUrl = new ShortUrl({ originalUrl })
+    const shortUrl = `${hostUrl}/${newUrl._id}`
+    newUrl.shortUrl = shortUrl
     await newUrl.save()
 
     return res.status(200).json({
